@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <meta name="description" content="NEXAINDO WiFi Operations — dashboard pelanggan dan tagihan internet.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <title>NEXAINDO WiFi Operations</title>
+</head>
+<body>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <section id="login-screen" class="login-wrap">
+    <form id="login-form" class="login-card">
+      <div class="brand-mark">N</div>
+      <p class="eyebrow">WIFI OPERATIONS</p>
+      <h1>NEXAINDO</h1>
+      <p class="muted">Masuk ke panel administrator</p>
+      <label>Email administrator<input id="email" type="email" autocomplete="username" required placeholder="admin@domain.com"></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required placeholder="Masukkan password"></label>
+      <button class="primary full" type="submit">Masuk <span>→</span></button>
+      <p id="login-error" class="error"></p>
+      <p class="tiny muted">Akun dibuat melalui Supabase Authentication. Pendaftaran publik tidak tersedia.</p>
+    </form>
+  </section>
+
+  <div id="app" class="app hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand"><div class="brand-mark small">N</div><div><strong>NEXAINDO</strong><small>WIFI OPERATIONS</small></div></div>
+      <p class="eyebrow side-label">WORKSPACE</p>
+      <nav>
+        <button class="nav-item active" data-view="overview"><span>▦</span> Overview</button>
+        <button class="nav-item" data-view="customers"><span>♙</span> Pelanggan <b id="nav-count">0</b></button>
+        <button class="nav-item" data-view="packages"><span>◈</span> Paket internet</button>
+        <button class="nav-item" data-view="billing"><span>▤</span> Tagihan & pembayaran</button>
+      </nav>
+      <div class="side-bottom"><div class="admin-chip"><div class="avatar">A</div><div><strong>Administrator</strong><small id="admin-email">Admin</small></div></div><button id="logout" class="logout">↪ Keluar</button></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><button id="menu-toggle" class="icon-button" aria-label="Buka menu">☰</button><div class="crumb">NEXAINDO <span>/</span> <strong id="crumb-current">Overview</strong></div><button id="refresh" class="icon-button" aria-label="Muat ulang">↻</button></header>
+      <div class="content">
+        <section id="view-overview" class="view">
+          <p class="eyebrow">OVERVIEW / <span id="today"></span></p>
+          <h1>Ringkasan operasional</h1>
+          <p class="lead">Pantau kesehatan bisnis internet Anda hari ini.</p>
+          <div class="live"><i></i> LIVE MONITORING <span id="sync-label">DATABASE ONLINE</span></div>
+          <div class="stats">
+            <article class="stat cyan"><div>Pelanggan aktif <span class="stat-icon">♧</span></div><strong id="active-count">0</strong><small>terhubung ke jaringan</small></article>
+            <article class="stat amber"><div>Pelanggan offline <span class="stat-icon">⌁</span></div><strong id="offline-count">0</strong><small>perlu ditindaklanjuti</small></article>
+            <article class="stat blue"><div>Tagihan bulan ini <span class="stat-icon">▣</span></div><strong id="billed-total">Rp 0</strong><small>estimasi tagihan</small></article>
+            <article class="stat green"><div>Sudah diterima <span class="stat-icon">↗</span></div><strong id="paid-total">Rp 0</strong><small>pembayaran masuk bulan ini</small></article>
+          </div>
+          <article class="panel chart-panel"><div class="panel-head"><div><p class="eyebrow">REVENUE FLOW</p><h2>Omzet bulanan</h2></div><div class="legend"><span><i class="blue-dot"></i> Ditagihkan</span><span><i class="cyan-dot"></i> Diterima</span></div></div><div id="revenue-chart" class="chart"></div></article>
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">RECENT CUSTOMERS</p><h2>Pelanggan terbaru</h2></div><button class="secondary" data-go="customers">Lihat semua</button></div><div id="recent-customers" class="table-wrap"></div></article>
+        </section>
+
+        <section id="view-customers" class="view hidden">
+          <p class="eyebrow">CUSTOMER DIRECTORY</p><h1>Pelanggan</h1><p class="lead">Kelola koneksi dan tagihan seluruh pelanggan NEXAINDO.</p>
+          <div class="toolbar"><input id="customer-search" type="search" placeholder="⌕  Cari nama, nomor, atau alamat..."><button id="add-customer" class="primary">＋ Tambah pelanggan</button></div>
+          <div class="panel"><div class="panel-head"><h2>Daftar pelanggan</h2><span id="customer-count" class="muted">0 pelanggan</span></div><div id="customer-table" class="table-wrap"></div></div>
+        </section>
+
+        <section id="view-packages" class="view hidden">
+          <p class="eyebrow">INTERNET PLANS</p><h1>Paket internet</h1><p class="lead">Kelola nama paket dan harga langganan bulanan.</p>
+          <div class="toolbar"><div></div><button id="add-package" class="primary">＋ Tambah paket</button></div>
+          <div id="package-list" class="package-grid"></div>
+        </section>
+
+        <section id="view-billing" class="view hidden">
+          <p class="eyebrow">BILLING & PAYMENTS</p><h1>Tagihan & pembayaran</h1><p class="lead">Pantau tagihan bulanan dan catat pembayaran pelanggan.</p>
+          <div class="toolbar"><input id="billing-search" type="search" placeholder="⌕  Cari pelanggan..."><button id="generate-bills" class="primary">＋ Buat tagihan bulan ini</button></div>
+          <div class="panel"><div class="panel-head"><h2>Tagihan bulan ini</h2><span id="billing-count" class="muted">0 tagihan</span></div><div id="billing-table" class="table-wrap"></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="customer-dialog"><form id="customer-form" class="dialog-form">
+    <div class="dialog-head"><div><p class="eyebrow">CUSTOMER PROFILE</p><h2 id="customer-dialog-title">Tambah pelanggan</h2></div><button type="button" class="icon-button" data-close aria-label="Tutup">×</button></div>
+    <input type="hidden" id="customer-id">
+    <label>Nama pelanggan<input id="customer-name" required maxlength="100" placeholder="Nama lengkap"></label>
+    <label>Nomor WhatsApp<input id="customer-phone" inputmode="tel" maxlength="30" placeholder="08xxxxxxxxxx"></label>
+    <label>Alamat<textarea id="customer-address" rows="2" maxlength="300" placeholder="Alamat pemasangan"></textarea></label>
+    <label>Paket internet<select id="customer-package"></select></label>
+    <label>Tagihan bulanan (Rp)<input id="customer-price" type="number" min="0" step="1000" required value="150000"></label>
+    <label>Status koneksi<select id="customer-status"><option value="active">Aktif</option><option value="offline">Offline</option></select></label>
+    <div class="dialog-actions"><button type="button" class="secondary" data-close>Batal</button><button type="submit" class="primary">Simpan pelanggan</button></div>
+  </form></dialog>
+
+  <dialog id="package-dialog"><form id="package-form" class="dialog-form">
+    <div class="dialog-head"><div><p class="eyebrow">INTERNET PLAN</p><h2 id="package-dialog-title">Tambah paket</h2></div><button type="button" class="icon-button" data-close>×</button></div>
+    <input type="hidden" id="package-id">
+    <label>Nama paket<input id="package-name" required maxlength="80" placeholder="Contoh: Home 20 Mbps"></label>
+    <label>Kecepatan (Mbps)<input id="package-speed" type="number" min="1" required value="20"></label>
+    <label>Harga bulanan (Rp)<input id="package-price" type="number" min="0" step="1000" required value="150000"></label>
+    <div class="dialog-actions"><button type="button" class="secondary" data-close>Batal</button><button type="submit" class="primary">Simpan paket</button></div>
+  </form></dialog>
+
+  <dialog id="payment-dialog"><form id="payment-form" class="dialog-form">
+    <div class="dialog-head"><div><p class="eyebrow">PAYMENT RECORD</p><h2>Catat pembayaran</h2></div><button type="button" class="icon-button" data-close>×</button></div>
+    <input type="hidden" id="payment-bill-id">
+    <p id="payment-description" class="muted"></p>
+    <label>Jumlah diterima (Rp)<input id="payment-amount" type="number" min="1" required></label>
+    <label>Tanggal pembayaran<input id="payment-date" type="date" required></label>
+    <label>Catatan (opsional)<input id="payment-note" maxlength="160" placeholder="Transfer, tunai, dll."></label>
+    <div class="dialog-actions"><button type="button" class="secondary" data-close>Batal</button><button type="submit" class="primary">Simpan pembayaran</button></div>
+  </form></dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+  <script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));</script>
+</body>
+</html>
